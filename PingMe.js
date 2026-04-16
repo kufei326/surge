@@ -19,6 +19,28 @@ const SECRET = '0fOiukQq7jXZV2GRi9LGlO';
 const MAX_VIDEO = 5;
 const VIDEO_DELAY = 8000;
 
+// === 多环境兼容处理 ===
+const isQuanX = typeof $task !== 'undefined';
+const isSurgeLoon = typeof $httpClient !== 'undefined';
+
+function readStorage(key) {
+  if (isQuanX) return $prefs.valueForKey(key);
+  if (isSurgeLoon) return $persistentStore.read(key);
+  return null;
+}
+
+function writeStorage(val, key) {
+  if (isQuanX) return $prefs.setValueForKey(val, key);
+  if (isSurgeLoon) return $persistentStore.write(val, key);
+  return false;
+}
+
+function notifyDone(title, body) {
+  if (isQuanX) $notify(scriptName, title, body);
+  if (isSurgeLoon) $notification.post(scriptName, title, body);
+}
+// ====================
+
 function MD5(string) {
   function RotateLeft(lValue, iShiftBits) { return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits)); }
   function AddUnsigned(lX, lY) {
@@ -150,42 +172,51 @@ function buildHeaders(capture) {
   return headers;
 }
 
-function notifyDone(title, body) {
-  $notify(scriptName, title, body);
-}
-
 if (typeof $request !== 'undefined' && $request) {
   const capture = {
     url: $request.url,
     paramsRaw: parseRawQuery($request.url),
     headers: normalizeHeaderNameMap($request.headers || {})
   };
-  $prefs.setValueForKey(JSON.stringify(capture), ckKey);
+  writeStorage(JSON.stringify(capture), ckKey);
   const keys = Object.keys(capture.paramsRaw).filter(k => k !== 'sign').join(', ');
   notifyDone('✅ 参数抓取成功', `已保存请求头+参数`);
   console.log(`【${scriptName}】capture:\n${JSON.stringify(capture, null, 2)}`);
   $done({});
 } else {
-  const raw = $prefs.valueForKey(ckKey);
+  const raw = readStorage(ckKey);
   if (!raw) {
     notifyDone('⚠️ 未抓到参数', '先打开 PingMe 触发一次 ');
     $done();
   } else {
     let capture = null;
-    try { 
-      capture = JSON.parse(raw); 
+    try { 
+      capture = JSON.parse(raw); 
     } catch (e) {
       notifyDone('⚠️ 参数损坏', '请重新打开 PingMe 抓参');
       $done();
     }
 
-    // 只有在 capture 解析成功的情况下才继续执行
     if (capture) {
       const headers = buildHeaders(capture);
       const msgs = [];
 
+      // 自动适应不同代理环境的网络请求 API
       function fetchApi(path) {
-        return $task.fetch({ url: buildUrl(path, capture), method: 'GET', headers });
+        const options = { url: buildUrl(path, capture), method: 'GET', headers: headers };
+        return new Promise((resolve, reject) => {
+          if (isQuanX) {
+            $task.fetch(options).then(res => resolve(res)).catch(err => reject(err));
+          } else if (isSurgeLoon) {
+            $httpClient.get(options, (err, res, body) => {
+              if (err) reject(err);
+              else {
+                res.body = body; // 对齐 QuanX 数据格式
+                resolve(res);
+              }
+            });
+          }
+        });
       }
 
       function doVideoLoop(count) {
@@ -210,7 +241,7 @@ if (typeof $request !== 'undefined' && $request) {
                   resolve();
                 }
               }).catch(err => {
-                msgs.push(`❌ 视频${i}：${err.error || '请求失败'}`);
+                msgs.push(`❌ 视频${i}：${err.error || err || '请求失败'}`);
                 resolve();
               });
             }, i === 0 ? 1500 : VIDEO_DELAY);
@@ -253,4 +284,3 @@ if (typeof $request !== 'undefined' && $request) {
     }
   }
 }
-
