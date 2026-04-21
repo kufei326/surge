@@ -7,10 +7,10 @@
 [Quantumult X]
 ====================================
 [rewrite_local]
-^https:\/\/api\.wetalkapp\.com\/app\/queryBalanceAndBonus url script-request-header https://raw.githubusercontent.com/ZenmoFeiShi/Qx/refs/heads/main/WeTalk.js
+^https:\/\/api\.wetalkapp\.com\/app\/queryBalanceAndBonus url script-request-header https://raw.githubusercontent.com/kufei326/surge/refs/heads/main/WeTalk.js
 
 [task_local]
-20 8,20 * * * https://raw.githubusercontent.com/ZenmoFeiShi/Qx/refs/heads/main/WeTalk.js, tag=WeTalk签到, enabled=true
+20 8,20 * * * https://raw.githubusercontent.com/kufei326/surge/refs/heads/main/WeTalk.js, tag=WeTalk签到, enabled=true
 
 ====================================
 [Surge / Loon / Shadowrocket]
