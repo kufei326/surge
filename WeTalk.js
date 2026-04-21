@@ -16,7 +16,7 @@
 [Surge / Loon / Shadowrocket]
 ====================================
 [Script]
-WeTalk抓包 = type=http-request, pattern=^https:\/\/api\.wetalkapp\.com\/app\/queryBalanceAndBonus, script-path=https://raw.githubusercontent.com/surge/refs/heads/main/WeTalk.js, requires-body=true
+WeTalk抓包 = type=http-request, pattern=^https:\/\/api\.wetalkapp\.com\/app\/queryBalanceAndBonus, script-path=https://raw.githubusercontent.com/kufei326/surge/refs/heads/main/WeTalk.js, requires-body=true
 WeTalk签到 = type=cron, cronexp="20 8,20 * * *", script-path=https://raw.githubusercontent.com/kufei326/surge/refs/heads/main/WeTalk.js, wake-system=true, timeout=120
 
 [MITM]
