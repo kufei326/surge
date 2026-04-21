@@ -18,6 +18,14 @@
 [Script]
 WeTalk抓包 = type=http-request, pattern=^https:\/\/api\.wetalkapp\.com\/app\/queryBalanceAndBonus, script-path=https://raw.githubusercontent.com/kufei326/surge/refs/heads/main/WeTalk.js, requires-body=true
 WeTalk签到 = type=cron, cronexp="20 8,20 * * *", script-path=https://raw.githubusercontent.com/kufei326/surge/refs/heads/main/WeTalk.js, wake-system=true, timeout=120
+Loon
+[Script]
+# WeTalk 抓包
+http-request ^https:\/\/api\.wetalkapp\.com\/app\/queryBalanceAndBonus script-path=https://raw.githubusercontent.com/kufei326/surge/refs/heads/main/WeTalk.js, requires-body=true, tag=WeTalk抓包
+
+# WeTalk 定时签到
+cron "20 8,20 * * *" script-path=https://raw.githubusercontent.com/kufei326/surge/refs/heads/main/WeTalk.js, tag=WeTalk签到
+
 
 [MITM]
 hostname = api.wetalkapp.com
